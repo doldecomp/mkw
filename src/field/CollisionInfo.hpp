@@ -4,6 +4,8 @@
 #include "egg/math/eggMatrix.hpp"
 #include "egg/math/eggMath.hpp"
 
+inline bool isNonNegative(f32 x) {return x > -FLT_MIN;}
+
 namespace Field {
 struct SoftWallColInfo {
   EGG::Vector3f bboxLow;
@@ -96,7 +98,7 @@ struct ColInfo : public ColInfoPartial {
     if ((kclAttributeTypeBit & KCL_TYPE_FLOOR) != 0) {
       this->updateFloor(now_dist, fnrm);
     } else if ((kclAttributeTypeBit & KCL_TYPE_WALL) != 0) {
-      if (EGG::Mathf::isNonNegative(this->wallDist)) {
+      if (isNonNegative(this->wallDist)) {
         f32 perpendicularity = 1.0f - VEC3Dot(&this->wallNrm, &fnrm);
         bool updatePerp;
         if (perpendicularity > this->colPerpendicularity) {

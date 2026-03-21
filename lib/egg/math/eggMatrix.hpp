@@ -37,25 +37,23 @@ namespace EGG
         void makeS(const Vector3f&);
         void makeR(const Vector3f&);
         void setAxisRotation(const Vector3f &, f32);
-	EGG::Vector3f multVector(const EGG::Vector3f&) const;
-	// Defined inline and emitted in KartWheelPhysics
-	EGG::Vector3f multVector33(const EGG::Vector3f&) const NEVER_INLINE;
+        EGG::Vector3f multVector(const EGG::Vector3f&) const;
+        // Defined inline and emitted in KartWheelPhysics
+        EGG::Vector3f multVector33(const EGG::Vector3f&) const NEVER_INLINE;
         void loadPosMtx(u32);
 
         f32& operator()(int i, int j) { return mtx[i][j]; }
 
-	friend Vector3f operator*(const Matrix34f& M, const Vector3f& v) {
-	    Vector3f out;
-	    const float vecX = v.x;
-	    const float vecY = v.y;
-	    const float vecZ = v.z;
-	    out.x = (vecX * M.mtx[0][0]) + (vecY * M.mtx[0][1]) + (vecZ * M.mtx[0][2]);
-	    out.y = (vecX * M.mtx[1][0]) + (vecY * M.mtx[1][1]) + (vecZ * M.mtx[1][2]);
-	    out.z = (vecX * M.mtx[2][0]) + (vecY * M.mtx[2][1]) + (vecZ * M.mtx[2][2]);
-	    return out;
-	}
-
-        //f32 tbl[3][4];
+        friend Vector3f operator*(const Matrix34f& M, const Vector3f& v) {
+            Vector3f out;
+            const float vecX = v.x;
+            const float vecY = v.y;
+            const float vecZ = v.z;
+            out.x = (vecX * M.mtx[0][0]) + (vecY * M.mtx[0][1]) + (vecZ * M.mtx[0][2]);
+            out.y = (vecX * M.mtx[1][0]) + (vecY * M.mtx[1][1]) + (vecZ * M.mtx[1][2]);
+            out.z = (vecX * M.mtx[2][0]) + (vecY * M.mtx[2][1]) + (vecZ * M.mtx[2][2]);
+            return out;
+        }
 
         static Matrix34f ident;
     };

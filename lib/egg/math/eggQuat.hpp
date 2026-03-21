@@ -13,21 +13,36 @@ namespace EGG {
 
 class Quatf {
 public:
+  Quatf() {};
+  Quatf(float w, float x, float y, float z) : w(w), x(x), y(y), z(z) {}
   void set(float w, float x, float y, float z);
   void setRPY(const Vector3f& euler);
   void setRPY(float r, float p, float y);
   void setAxisRotation(const Vector3f& axis, float angle);
   float axisSquareNorm() const { return x*x + y*y + z*z; }; // maybe Vector3f subobj
-  float squareNorm();
+  float squareNorm() const;
   void normalise();
-  Quatf inverse();
-  void rotateVector(const Vector3f& v, Vector3f& out);
-  void rotateVectorInv(const Vector3f& v, Vector3f& out);
+  void inverse(Quatf& out) const;
+  void rotateVector(const Vector3f& v, Vector3f& out) const;
+  void rotateVectorInv(const Vector3f& v, Vector3f& out) const;
+  // yep, that's what the declaration seems to be, completely bizarre
+  void vecMul(const Quatf& q, const Vector3f& v, Quatf& out) const;
   void slerpTo(const Quatf& r4, float, Quatf& r5) const;
-  void makeVectorRotation(Vector3f& v0, Vector3f& v1);
+  void makeVectorRotation(const Vector3f& v0, const Vector3f& v1);
+
+  Quatf conjugate() const {
+    return Quatf(w, -x, -y, -z);
+  }
 
   inline void setIdentity() {
     set(1.0f, 0.0f, 0.0f, 0.0f);
+  }
+
+  void multScalar(f32 s) {
+    w *= s;
+    x *= s;
+    y *= s;
+    z *= s;
   }
 
   inline Quatf& operator=(const Quatf& rhs) {
