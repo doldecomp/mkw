@@ -464,10 +464,115 @@ bool MapdataEnemyPoint::isNonPrivateBattle() {
               RaceConfig::Settings::GAMEMODE_PUBLIC_BATTLE);
 }
 
+extern "C" void VEC3_fromNeg(EGG::Vector3f& out, const EGG::Vector3f& in);
+void VEC3_fromQuaternionRotated(EGG::Vector3f& out, const EGG::Quatf& q,
+                                const EGG::Vector3f& in);
+extern "C" void Vec3_add(EGG::Vector3f* out, const EGG::Vector3f* a, const EGG::Vector3f* b);
+extern "C" void Vec3_fromScale(EGG::Vector3f* out, const EGG::Vector3f* in, f32 scale);
+
+extern "C" EGG::Vector3f RKSystem_ex;
+extern "C" EGG::Vector3f lbl_802A4148; // RKSystem_ez
+
+inline EGG::Vector3f operator-(const EGG::Vector3f& in) {
+  EGG::Vector3f out;
+  VEC3_fromNeg(out, in);
+  return out;
+}
+
+inline EGG::Vector3f rotateQuat(const EGG::Quatf& q, const EGG::Vector3f& v) {
+  EGG::Vector3f out;
+  VEC3_fromQuaternionRotated(out, q, v);
+  return out;
+}
+
+MapdataJugemPoint::MapdataJugemPoint(const SData* data)
+    : mpData(data),
+      mRotation(DEG2RAD(data->rotation.x), DEG2RAD(data->rotation.y),
+                DEG2RAD(data->rotation.z)) {
+  EGG::Quatf quat;
+  quat.setRPY(mRotation.x, mRotation.y, mRotation.z);
+
+  EGG::Vector3f negZ = -lbl_802A4148;
+  EGG::Vector3f forward = rotateQuat(quat, negZ);
+  mForward = forward;
+
+  EGG::Vector3f negX = -RKSystem_ex;
+  EGG::Vector3f tangent = rotateQuat(quat, negX);
+  mTangent = tangent;
+
+  if (mpData->range < 0) {
+    _2a = -1;
+    _2c = 0;
+  } else {
+    _2a = mpData->range % 100;
+    if (_2a == 99) {
+      _2a = -1;
+    }
+    _2c = mpData->range / 100;
+  }
+}
+
 MapdataJugemPoint* CourseMap::getJugemPoint(u16 i) const {
   u16 count = mpJugemPoint ? mpJugemPoint->size() : 0;
   return i < count ? mpJugemPoint->get(i) : 0;
 }
+
+void MapdataJugemPoint::getPos(EGG::Vector3f* pos, u32 playerIdx) const {
+  s32 gameMode = RaceConfig::spInstance->mRaceScenario.mSettings.mGameMode;
+  if (gameMode == RaceConfig::Settings::GAMEMODE_TIME_TRIAL ||
+      gameMode == RaceConfig::Settings::GAMEMODE_GHOST_RACE) {
+    playerIdx = 0xff;
+  }
+
+  if (playerIdx != 0xff) {
+    static const struct {
+      s8 tangent;
+      s8 forward;
+    } sOffsets[12] = {
+      {-1, 0}, { 1, 0}, {-3, 0}, { 3, 0},
+      {-1, 1}, { 1, 1}, {-3, 1}, { 3, 1},
+      {-1, 2}, { 1, 2}, {-3, 2}, { 3, 2},
+    };
+
+    u8 idx = playerIdx;
+    EGG::Vector3f local_2c;
+    EGG::Vector3f t;
+    EGG::Vector3f f;
+    EGG::Vector3f offset;
+    Vec3_fromScale(&t, &mTangent, (f32)sOffsets[idx].tangent * 150.0f);
+    Vec3_fromScale(&f, &mForward, (f32)sOffsets[idx].forward * 300.0f);
+    Vec3_add(&offset, &t, &f);
+    local_2c = offset;
+
+    f32 z = mpData->position.z + local_2c.z;
+    f32 y = mpData->position.y + local_2c.y;
+    f32 x = mpData->position.x + local_2c.x;
+    pos->x = x;
+    pos->y = y;
+    pos->z = z;
+  } else {
+    f32 x;
+    f32 y;
+    f32 z;
+    z = mpData->position.z;
+    y = mpData->position.y;
+    x = mpData->position.x;
+    pos->x = x;
+    pos->y = y;
+    pos->z = z;
+  }
+}
+
+#pragma dont_inline on
+extern "C" void Vec3_fromScale(EGG::Vector3f* out, const EGG::Vector3f* in, f32 scale) {
+  f32 z = in->z * scale;
+  f32 y = in->y * scale;
+  f32 x = in->x * scale;
+  out->z = z;
+  out->x = x;
+  out->y = y;
+}
+#pragma dont_inline off
 
 MapdataCannonPoint* CourseMap::getCannonPoint(u16 i) const {
   u16 count = mpCannonPoint ? mpCannonPoint->size() : 0;
