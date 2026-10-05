@@ -56,4 +56,10 @@ KartState::KartState(KartSettings* settings) {
     set(KART_FLAG_DEMO_LOSS);
   }
 }
+
+void KartState::init() {
+  reset();
+  mWipeState = -1;
+  mWipeFrame = -1;
+}
 }
