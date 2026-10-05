@@ -127,6 +127,46 @@ KrtFile** RaceManager::getKrtFile() {
         return (files[0] != nullptr) ? files : nullptr;
     }
 }
+
+extern "C" void RaceinfoPlayer_getLapSplit(RaceManagerPlayer* player, u32 lap, Time* split) {
+  if (lap < 2) {
+    split->copyFrom(*player->lapFinishTimes);
+    return;
+  }
+
+  if (RaceManager::spInstance->timerManager->hasSpecialTimerState()) {
+    split->set(99, 59, 999, true);
+    return;
+  }
+
+  u32 earlierLap = lap - 2;
+  u32 laterLap = lap - 1;
+  s32 seconds = 0;
+  s32 minutes = 0;
+  const Time* earlier = player->lapFinishTimes + earlierLap;
+  const Time* later = player->lapFinishTimes + laterLap;
+  s32 milliseconds = later->milliseconds() - earlier->milliseconds();
+  if (milliseconds < 0) {
+    seconds = -1;
+    milliseconds += 1000;
+  }
+  seconds += later->seconds() - earlier->seconds();
+  if (seconds < 0) {
+    minutes = -1;
+    seconds += 60;
+  }
+  minutes += later->minutes() - earlier->minutes();
+  if (minutes < 0) {
+    minutes = 0;
+    seconds = 0;
+    milliseconds = 0;
+  }
+
+  split->set(minutes, seconds, milliseconds, true);
+  if (!player->lapFinishTimes[laterLap].isValid() || !player->lapFinishTimes[earlierLap].isValid()) {
+    split->setTime(0xFFFF, 0, 0);
+  }
+}
 }
 
 // needs KartObjectManager definitions
