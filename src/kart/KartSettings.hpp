@@ -8,7 +8,9 @@
 #include "KartDispParams.hpp"
 
 namespace Kart {
-class GpStats;
+struct GpStats {
+  bool startBoostSuccessful;
+};
 class RaceStats;
 class KartSettings {
 public:

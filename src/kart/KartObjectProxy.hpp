@@ -41,7 +41,11 @@ class KartEnemy;
 class KartAccessor_44;
 class KartAccessor_48;
 class KartNetReceiver;
-class KartNetSender;
+class KartNetSender {
+public:
+  u8 _00[0x57];
+  u8 mStartBoostIdx;
+};
 class BoxColUnit;
 class KartAccessor_50;
 class KartAccessor_60;
@@ -84,8 +88,8 @@ class KartObjectProxy {
 public:
   KartObjectProxy();
 
-  KartSettings* kartSettings();
-  const KartSettings* kartSettings() const;
+  KartSettings* kartSettings() { return mAccessor->kartSettings; }
+  const KartSettings* kartSettings() const { return mAccessor->kartSettings; }
   KartPhysics* kartPhysics();
   const KartPhysics* kartPhysics() const;
   KartDynamics* kartDynamics();

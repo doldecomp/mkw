@@ -12,12 +12,21 @@
 namespace Kart {
 
 enum KartFlags {
+  KART_FLAG_ACCELERATE = 0,
+  KART_FLAG_BRAKE = 1,
+  KART_FLAG_DRIFT_INPUT = 2,
   KART_FLAG_HOPPING = 3,
+  KART_FLAG_HOP_START = 7,
+  KART_FLAG_ACCELERATE_START = 8,
+  KART_FLAG_GROUND_START = 9,
+  KART_FLAG_STICK_LEFT = 13,
+  KART_FLAG_WALL_COLLISION_START = 14,
   KART_FLAG_ALL_WHEELS_COLLISION = 15,
   KART_FLAG_STICKY_ROAD = 16,
   KART_FLAG_TOUCHING_GROUND = 18,
   KART_FLAG_AUTO_DRIFT = 19,
   KART_FLAG_AIR_START = 23,
+  KART_FLAG_STICK_RIGHT = 24,
   KART_FLAG_LARGE_FLIP_HIT = 25,
   KART_FLAG_IN_BULLET = 28,
   KART_FLAG_JUMPPAD = 30,
@@ -25,6 +34,7 @@ enum KartFlags {
   KART_FLAG_CANNON_START = 35,
   KART_FLAG_IN_CANNON = 36,
   KART_FLAG_HALFPIPE_RAMP = 41,
+  KART_FLAG_ZIPPER_INVISIBLE_WALL = 44,
   KART_FLAG_AT_SUSP_LIMIT = 51,
   /// Used for bouncy mushrooms
   KART_FLAG_JUMPPAD_VELY_INCREASE = 55,
@@ -33,12 +43,16 @@ enum KartFlags {
   KART_FLAG_HALFPIPE_RAMP_LOCAL = 0x43,
   KART_FLAG_WHEELIE_ROT = 0x44,
   KART_FLAG_SKIP_WHEEL_CALC = 0x45,
+  KART_FLAG_STH_4C = 0x4c,
   KART_FLAG_DISABLE_Y_SUS_FORCE = 0x56,
   KART_FLAG_HALFPIPE_MIDAIR = 0x57,
   KART_FLAG_COL_INVISIBILITY = 0x59,
   KART_FLAG_IN_A_BULLET = 0x5b,
+  KART_FLAG_STH_5E = 0x5e,
+  KART_FLAG_STH_5F = 0x5f,
   KART_FLAG_STH_61 = 0x61,
   KART_FLAG_STH_WALL_COL = 0x63,
+  KART_FLAG_CHARGE_START_BOOST = 0x68,
   KART_FLAG_STH_KILLER = 0x6a,
   KART_FLAG_CPU = 0x80,
   KART_FLAG_LOCAL = 0x81,
@@ -51,6 +65,8 @@ enum KartFlags {
   KART_FLAG_HAS_STOPPED = 0x8c
 };
 
+#define KART_FLAG_MASK(flag) (1 << ((flag) % 32))
+
 class KartState {
 public:
   KartState(KartSettings* settings);
@@ -58,8 +74,12 @@ public:
   void init();
   void reset();
   void resetOob();
+  void updateWipe();
   void startWipe(int wipeState);
   void resetCollisionFlags();
+  void updateStartBoostCharge();
+  void computeStartBoost();
+  void applyStartBoost(int startBoostIdx);
 
   bool on(size_t n) const {
     return mFlags.on(n);
@@ -93,12 +113,13 @@ private:
   s32 mJumpPadType;
   f32 _7c;
   u32 mCannonPointId;
-  u8 _84[0x86 - 0x84];
+  u16 _84;
   s16 mHalfpipeInvisibilityTimer;
   EGG::Vector2f mStick;
   int mWipeState;
   s16 mWipeFrame;
-  u8 _96[0x9c - 0x96];
+  u8 _96[0x98 - 0x96];
+  f32 mWipeRatio;
   f32 mStartBoostCharge;
   s32 mStartBoostIdx;
   u16 _a4;

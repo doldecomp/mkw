@@ -10,6 +10,11 @@ struct RaceMode {
     RaceManager* raceManager;
 };
 
+struct RaceModeCompetition : public RaceMode {
+  u32 _08;
+  u32 mObjectiveStatus;
+};
+
 class KrtFile;
 
 struct RaceModeGrandPrix: public RaceMode {
