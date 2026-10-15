@@ -98,7 +98,7 @@ bool KartObjectProxy::isLocal() {
   return kartState()->on(KART_FLAG_LOCAL);
 }
 
-bool KartObjectProxy::isCpu() {
+bool KartObjectProxy::isCpu() const {
   return kartState()->on(KART_FLAG_CPU);
 }
 
@@ -178,6 +178,15 @@ s32 KartObjectProxy::getAppliedHopStickX() {
 }
 
 KartModel* KartObjectProxy::kartModel() { return mAccessor->mModel; }
+
+u8 KartObjectProxy::getPlayerIdx() const { return kartSettings()->playerIdx; }
+
+void KartObjectProxy::getBodyForward(EGG::Vector3f& out) {
+  const EGG::Matrix34f& pose = kartPhysics()->pose;
+  out.x = pose.mtx[0][0];
+  out.y = pose.mtx[1][0];
+  out.z = pose.mtx[2][0];
+}
 
 f32 KartObjectProxy::getVehicleSpeed() { return kartMove()->speed(); }
 
@@ -265,6 +274,18 @@ KartAccessor_60* KartObjectProxy::kartAccessor_60() { return mAccessor->m_60; }
 
 bool KartObjectProxy::isSomeMoveFlagActive() {
   return kartMove()->flags() & 1 << 2;
+}
+
+extern "C" void fn_1_806E8(KartObjectProxy* proxy, bool, bool, bool, bool);
+
+void KartObjectProxy::shouldVanishPlayer(bool vanish) {
+  fn_1_806E8(this, !vanish, false, true, false);
+  KartState* state = kartState();
+  if (vanish) {
+    state->set(KART_FLAG_VANISH);
+  } else {
+    state->reset(KART_FLAG_VANISH);
+  }
 }
 
 const KartHalfPipe* KartObjectProxy::kartHalfPipe() {
