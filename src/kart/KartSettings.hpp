@@ -8,11 +8,27 @@
 #include "KartDispParams.hpp"
 
 namespace Kart {
-class GpStats;
-class RaceStats;
+class RaceStats {
+  u8 _unk[0x14];
+};
+
+class GpStats {
+  u8 _unk[0x1c];
+};
+
 class KartSettings {
 public:
-  KartSettings();
+  KartSettings(
+      s8 playerIdx,
+      System::VehicleId vehicle,
+      System::CharacterId character,
+      u32 isBike,
+      KartParam* kartParam,
+      void* arg6,
+      KartDriverDispParams* kartDriverDispParams,
+      KartPartsDispParams* kartPartsDispParams,
+      BikePartsDispParams* bikePartsDispParams,
+      DriverDispParams* driverDispParams);
 
   u32 isBike;
   System::VehicleId vehicle;
