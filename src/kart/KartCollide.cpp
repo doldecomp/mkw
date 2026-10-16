@@ -3,6 +3,8 @@
 
 extern "C" EGG::Vector3f RKSystem_ex;
 
+extern u32* lbl_1_rodata_16FAC;
+
 using namespace Field;
 
 namespace Kart {
@@ -208,40 +210,44 @@ bool KartCollide::processWall(KartCollisionInfo& kartColInfo, const Field::ColIn
 }
 }
 
-# ifdef NON_MATCHING
 namespace Kart {
 void KartCollide::checkNeighborhood(KartCollisionInfo& kartColInfo, const Hitbox& hitbox, const Field::ColInfo& colInfo) {
   f32 colPerp = colInfo.colPerpendicularity;
-  if (colPerp> 0.0f) {
-    if (_68 < colPerp) {
+  if (colPerp > 0.0f) {
+    if (colPerp > _68) {
       _68 = colPerp;
     }
 
-    if ((kartColInfo.flags & (COL_FLAG_WALL_AT_LEFT_CLOSER | COL_FLAG_WALL_AT_RIGHT_CLOSER)) != 0) {
-      if (fabs(hitbox.bsp->pos.x) > 10.0f) {
-        if (colPerp > 0.0f) {
-          kartColInfo.flags |= COL_FLAG_WALL_AT_LEFT_CLOSER;
-        } else {
-          kartColInfo.flags |= COL_FLAG_WALL_AT_RIGHT_CLOSER;
-        }
+    if ((kartColInfo.flags & (COL_FLAG_WALL_AT_LEFT_CLOSER | COL_FLAG_WALL_AT_RIGHT_CLOSER)) == 0) {
+      if (fabsf(hitbox.bsp->pos.x) > 10.0f) {
+       if (hitbox.bsp->pos.x > 0.0f) {
+          ((vu32&)kartColInfo.flags) |= COL_FLAG_WALL_AT_RIGHT_CLOSER;
+       } else {
+          ((vu32&)kartColInfo.flags) |= COL_FLAG_WALL_AT_LEFT_CLOSER;
+       }
         kartColInfo.colPerpendicularity = colInfo.colPerpendicularity;
       } else {
-        EGG::Vector3f localRight;
-        kartDynamics()->mainRot.rotateVector(RKSystem_ex, localRight);
-        f32 offs[2];
+       EGG::Vector3f localRight;
+       kartDynamics()->mainRot.rotateVector(RKSystem_ex, localRight);
+       u32* typeMaskOut = lbl_1_rodata_16FAC;
+        const EGG::Vector3f* lastPos = &hitbox.lastPos;
+       f32 offs[2] = {0.0f, 0.0f};
         f32 sign;
-        for (s32 i = 0; i < 2; i++) {
+        for (u8 i = 0; i < 2; i++) {
           if (i == 1) {
             sign = -1.0f;
           } else {
             sign = 1.0f;
           }
           sign *= hitbox.radius;
-          EGG::Vector3f offset = hitbox.pos + localRight * sign;
+          EGG::Vector3f offset;
+          offset.x = hitbox.pos.x + sign * localRight.x;
+          offset.y = hitbox.pos.y + sign * localRight.y;
+          offset.z = hitbox.pos.z + sign * localRight.z;
           ColInfoPartial tmpInfo;
           tmpInfo.bboxLow.setZero();
           tmpInfo.bboxHigh.setZero();
-          if (CourseModel::spInstance->checkSphereCachedPartial(offset, hitbox.lastPos, KCL_TYPE_DRIVER_WALL, &tmpInfo, &lbl_808a66cc, hitbox.radius, 0)) {
+          if (CourseModel::spInstance->checkSphereCachedPartial(offset, *lastPos, KCL_TYPE_DRIVER_WALL, &tmpInfo, typeMaskOut, hitbox.radius, 0)) {
             offs[i] = colInfo.tangentOff.lenSq();
           }
         }
@@ -258,7 +264,6 @@ void KartCollide::checkNeighborhood(KartCollisionInfo& kartColInfo, const Hitbox
   }
 }
 }
-#endif
 
 namespace Kart {
 void KartCollide::processCannon(u32* colTypeMask) {

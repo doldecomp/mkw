@@ -55,6 +55,24 @@ public:
     mIsValid = isValid;
   }
 
+  void copyFrom(const Time& other) {
+    mMinutes = other.mMinutes;
+    mSeconds = other.mSeconds;
+    mMilliseconds = other.mMilliseconds;
+    mIsValid = other.mIsValid;
+  }
+
+  void setTime(u16 minutes, u8 seconds, u16 milliseconds) {
+    mMinutes = minutes;
+    mSeconds = seconds;
+    mMilliseconds = milliseconds;
+  }
+
+  u16 minutes() const { return mMinutes; }
+  u8 seconds() const { return mSeconds; }
+  u16 milliseconds() const { return mMilliseconds; }
+  bool isValid() const { return mIsValid; }
+
 private:
   u16 mMinutes;
   u8 mSeconds;

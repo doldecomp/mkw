@@ -78,6 +78,7 @@ public:
   virtual ~TimerManagerBase();
   virtual void reset();
   virtual void update();
+  bool hasSpecialTimerState() const { return static_cast<u8>(field26_0x40) != 0; }
 
 protected:
   Time timer1;
