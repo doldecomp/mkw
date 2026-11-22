@@ -780,7 +780,7 @@ config.libs = [
             Object(NonMatching, "system/KPadController.cpp"),
             Object(Matching, "system/LocalizedArchive.cpp"),
             Object(Matching, "system/MultiDvdArchive.cpp"),
-            Object(NonMatching, "system/NandUtil.cpp"),
+            Object(Matching, "system/NandUtil.cpp"),
             Object(Matching, "system/Rating.cpp"),
             Object(NonMatching, "system/RaceConfig.cpp"),
             Object(NonMatching, "system/RaceManager.cpp"),
